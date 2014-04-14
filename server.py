@@ -1,13 +1,15 @@
 #!/bin/python3
-import os, http.server, socketserver, hashlib, urllib.request
+import os, http.server, socketserver, hashlib, urllib.request, \
+    configparser
 
-PORT = 8666
+# Settings
+cfg_file = "config.ini"
 
-import configparser
-
-def initConfig(config):
+def initConfig(config_filename):
+    """ Creating the default configuration file """
     config = configparser.ConfigParser()
-    config['DEFAULT'] = {
+    config['DEFAULT'] = {}
+    config['SERVER'] = {
             'port': 8666,
             'pid': "/var/run/cml/cml.pid",
             }
@@ -15,7 +17,17 @@ def initConfig(config):
             'use-cache': "no",
             'cache-dir': "cache/"
             }
-    with open(config, 'w') as configFile: config.write(configFile)
+    with open(config_filename, 'w') as cfg: config.write(cfg)
+
+def readConfig(config_filename):
+    """ Reading the configuration file """
+    config = configparser.ConfigParser()
+    config.read(config_filename)
+    for sec in config.sections():
+        print("[", sec, "]")
+        for el in config[sec]:
+            print(">", el, "\t:", config[sec][el])
+    return config
 
 Handler = http.server.SimpleHTTPRequestHandler
 class MyHandler (Handler):
@@ -113,9 +125,13 @@ class MyHandler (Handler):
         f = open(path, 'rb')
         return f
 
-initConfig("config.ini")
+# Configuration init
+if not os.path.isfile(cfg_file): initConfig(cfg_file)
+CONFIG = readConfig(cfg_file)
+
 
 # MAIN
+PORT = int(CONFIG["SERVER"]["port"])
 httpd = socketserver.TCPServer(("", PORT), MyHandler)
 print("serving at port", PORT)
 httpd.serve_forever()
