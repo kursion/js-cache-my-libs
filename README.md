@@ -30,7 +30,7 @@ You will need **Python 3.x** as a dependency so don't forget to bring your
 python into your home. Feed them a bit some time by launching the server:
 
 ```shell
-python3 cml.py
+$ python3 cml.py
 ```
 
 You can configure his nutriments by editing the configuration file *config.ini*
@@ -50,3 +50,8 @@ Configuration options
 Arguments options
 -----------------
 None for the moment
+
+
+What about the author ?
+=======================
+He stopped playing World of Warcraft to create small tools for the community. It might not be very usefull for most of you but he enjoys a lot typing text and eating Marshmallows in front of his screen... no matter what ! Actually he works at AgFlow with a very great team that going to kill him because he is not fully concentrate on the work and invovlved in some stupid create that are useless for them ! Shit !
