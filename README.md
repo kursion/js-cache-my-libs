@@ -30,26 +30,53 @@ You will need **Python 3.x** as a dependency so don't forget to bring your
 python into your home. Feed them a bit some time by launching the server:
 
 ```shell
-$ python3 cml.py
+$ python3 cml.py --verbosity
 ```
 
-You can configure his nutriments by editing the configuration file *config.ini*
+Then you can use CacheMyLibs by using the address from you localhost
+```javascript
+<script src='http://127.0.0.1:8666/jquery/2.1.1-beta1/jquery.min.js'></script>
+```
 
+That's it ! CacheMyLibs will try to get it from your localhost (the cache). If the
+file couldn't be find, then it will try to search the librairie from the defined
+CDN and cache it for you.
 
 Configuration options
 ---------------------
+You can configure his nutriments by editing the configuration file *config.ini*
+
 #### SERVER section
 * port (default 8666): where to feed this animal
 * pid (defaut /var/run/cml/cml.pid): check if he is alive
 
 #### CACHE section
+This section provides you some basic influence over the caching options.
 * use-cache (default: yes): make him faster to catch his prey(s). By setting use-cache to `no` this tool will become somehow very useless. So I won't recommend to disable this feature.
 * cache-dir (default: cache/): where to store the aliments. This is the directory where all catched file will be stored.
 
+#### LIBS section
+This section let you add *aliases* over the librairies that you want
+to automatically download. For instance, it will let you replace
+```javascript
+<script src='http://127.0.0.1:8666/jquery/2.1.1-beta1/jquery.min.js'></script>
+```
+by
+```javascript
+<script src='http://127.0.0.1:8666/jquery.min.js'></script>
+```
+In order to enable this you should add an entry into the configuration file. Here is a small
+example of how it should look like:
+
+```config
+[LIBS]
+jquery.min.js = jquery/2.1.1-beta1/jquery.min.js
+react.js = react/0.10.0/react.min.js
+```
 
 Arguments options
 -----------------
-None for the moment
+* --verbosity (default: no): do you want to speak with the python ?
 
 
 What about the author ?

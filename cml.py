@@ -1,6 +1,13 @@
 #!/bin/python3
 import os, http.server, socketserver, hashlib, urllib.request, \
-    configparser
+    configparser, argparse
+
+parser = argparse.ArgumentParser(
+        description='CacheMyLibs - Yves Lange')
+parser.add_argument(
+        '--verbosity', action="store_true",
+        help='adding some verbosity')
+ARGS = parser.parse_args()
 
 # Settings
 cfg_file = "config.ini"
@@ -17,22 +24,34 @@ def initConfig(config_filename):
             'use-cache': "no",
             'cache-dir': "cache/"
             }
+    CONFIG["CDN"] = {
+            'cloudflare': "http://cdnjs.cloudflare.com/ajax/libs"
+            }
+    CONFIG["LIBS"] = {
+            'jquery.min.js': "jquery/2.1.1-beta1/jquery.min.js",
+            'react.js': "react/0.10.0/react.min.js"
+            }
     with open(config_filename, 'w') as cfg: config.write(cfg)
 
 def readConfig(config_filename):
     """ Reading the configuration file """
     config = configparser.ConfigParser()
     config.read(config_filename)
-    for sec in config.sections():
-        print("[", sec, "]")
-        for el in config[sec]:
-            print(">", el, "\t:", config[sec][el])
+    if ARGS.verbosity:
+        for sec in config.sections():
+            print("[", sec, "]")
+            for el in config[sec]:
+                print(">", el, "\t:", config[sec][el])
     return config
 
+# Configuration init
+if not os.path.isfile(cfg_file): initConfig(cfg_file)
+CONFIG = readConfig(cfg_file)
+
+
+# HTTP Get Handler
 Handler = http.server.SimpleHTTPRequestHandler
 class MyHandler (Handler):
-    cacheDir = "cache/"
-    cdnPrefix= "http://cdnjs.cloudflare.com/ajax/libs"
     cdnExts = ['js']
 
     def do_GET(self):
@@ -74,7 +93,8 @@ class MyHandler (Handler):
         ctype = self.guess_type(path)
         try:
             # Try to download from CDN and retry
-            if path.split(".")[-1] in self.cdnExts:
+            if path.split(".")[-1] in self.cdnExts and \
+                    CONFIG["CACHE"].getboolean("use-cache"):
                 f = self.attemptCDN(self.path)
             else: f = open(path, 'rb')
         except OSError:
@@ -96,12 +116,18 @@ class MyHandler (Handler):
     def attemptCDN(self, path):
         """ Tries to get the CDN from localhost or download it
         from the CDN (cloudflare.com) """
-        cdnPath = self.cdnPrefix+path
-        filename = self.cacheDir+hashlib.md5(cdnPath.encode()).hexdigest()
-        f = self.getFile(filename)
-        print("serving: ", path, "as", filename)
-        if f == None:
-            f = self.getPage(cdnPath, filename)
+        if path[1:] in CONFIG["LIBS"]: path = "/"+CONFIG["LIBS"][path[1:]]
+        for cdnPrefix in CONFIG["CDN"]:
+            cdnPath = CONFIG["CDN"][cdnPrefix]+path
+            filename = CONFIG["CACHE"]["cache-dir"]+hashlib.md5(cdnPath.encode()).hexdigest()
+            if ARGS.verbosity: print("Checking cache: ", path, "as", filename)
+            f = self.getFile(filename)
+            if f == None:
+                if ARGS.verbosity: print("Get from", cdnPrefix, cdnPath)
+                f = self.getPage(cdnPath, filename)
+            if f != None:
+                if ARGS.verbosity: print("Found", cdnPath, "from CDN")
+                break
         return f
 
     def getFile(self, filename):
@@ -117,6 +143,10 @@ class MyHandler (Handler):
         f = urllib.request.urlopen(url)
         srcOnline = f.read().decode("utf-8")
         f.close()
+        # TODO: this doesn't work as it should be
+        if srcOnline == "":
+            if ARGS.verbosity: print("Couldn't find from CDN at", url)
+            return None
 
         f = open(path, 'w')
         f.write(srcOnline)
@@ -125,15 +155,11 @@ class MyHandler (Handler):
         f = open(path, 'rb')
         return f
 
-# Configuration init
-if not os.path.isfile(cfg_file): initConfig(cfg_file)
-CONFIG = readConfig(cfg_file)
-
 
 # MAIN
 PORT = int(CONFIG["SERVER"]["port"])
 httpd = socketserver.TCPServer(("", PORT), MyHandler)
-print("serving at port", PORT)
+if ARGS.verbosity: print("serving at port", PORT)
 httpd.serve_forever()
 
 
