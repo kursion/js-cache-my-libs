@@ -98,9 +98,13 @@ class MyHandler (Handler):
                 f = self.attemptCDN(self.path)
             else: f = open(path, 'rb')
         except OSError:
-
             self.send_error(404, "File not found")
             return None
+
+        if f == None:
+            self.send_error(404, "File not found")
+            return
+
         try:
             self.send_response(200)
             self.send_header("Content-type", ctype)
@@ -117,17 +121,29 @@ class MyHandler (Handler):
         """ Tries to get the CDN from localhost or download it
         from the CDN (cloudflare.com) """
         if path[1:] in CONFIG["LIBS"]: path = "/"+CONFIG["LIBS"][path[1:]]
+
         for cdnPrefix in CONFIG["CDN"]:
             cdnPath = CONFIG["CDN"][cdnPrefix]+path
             filename = CONFIG["CACHE"]["cache-dir"]+hashlib.md5(cdnPath.encode()).hexdigest()
-            if ARGS.verbosity: print("Checking cache: ", path, "as", filename)
+            if ARGS.verbosity: print("Checking cache: ", cdnPath, "as", filename)
             f = self.getFile(filename)
-            if f == None:
-                if ARGS.verbosity: print("Get from", cdnPrefix, cdnPath)
-                f = self.getPage(cdnPath, filename)
             if f != None:
-                if ARGS.verbosity: print("Found", cdnPath, "from CDN")
+                print("Found in cache at", filename)
+                return f
+
+        # Was not in cache, get it from CDN
+        for cdnPrefix in CONFIG["CDN"]:
+            cdnPath = CONFIG["CDN"][cdnPrefix]+path
+            filename = CONFIG["CACHE"]["cache-dir"]+hashlib.md5(cdnPath.encode()).hexdigest()
+            if ARGS.verbosity:
+                print("Get from", cdnPrefix, cdnPath)
+            f = self.getPage(cdnPath, filename)
+            if f != None:
+                if ARGS.verbosity: print("Found", cdnPath, "from CDN and store in ", filename)
                 break
+            else:
+                if ARGS.verbosity: print("Not found from", cdnPath)
+
         return f
 
     def getFile(self, filename):
@@ -140,13 +156,11 @@ class MyHandler (Handler):
     def getPage(s, url, path):
         """ Get and write the content of a page to a file """
         # TODO: this might be simplified a bit
-        f = urllib.request.urlopen(url)
-        srcOnline = f.read().decode("utf-8")
-        f.close()
-        # TODO: this doesn't work as it should be
-        if srcOnline == "":
-            if ARGS.verbosity: print("Couldn't find from CDN at", url)
-            return None
+        try:
+            f = urllib.request.urlopen(url)
+            srcOnline = f.read().decode("utf-8")
+            f.close()
+        except: return None
 
         f = open(path, 'w')
         f.write(srcOnline)

@@ -55,6 +55,10 @@ This section provides you some basic influence over the caching options.
 * use-cache (default: yes): make him faster to catch his prey(s). By setting use-cache to `no` this tool will become somehow very useless. So I won't recommend to disable this feature.
 * cache-dir (default: cache/): where to store the aliments. This is the directory where all catched file will be stored.
 
+#### CDN section
+This section will let you configure the real CDN servers that are needed to grab librairies that aren't cached
+on you system.
+
 #### LIBS section
 This section let you add *aliases* over the librairies that you want
 to automatically download. For instance, it will let you replace
@@ -81,4 +85,9 @@ Arguments options
 
 What about the author ?
 =======================
-He stopped playing World of Warcraft to create small tools for the community. It might not be very usefull for most of you but he enjoys a lot typing text and eating Marshmallows in front of his screen... no matter what ! Actually he works at AgFlow with a very great team that going to kill him because he is not fully concentrate on the work and invovlved in some stupid create that are useless for them ! Shit !
+He stopped playing World of Warcraft to create small tools for the community. It might not be very usefull for most of
+you but he enjoys a lot typing text and eating Marshmallows in front of his screen... no matter what ! Actually he works
+at AgFlow with a very great team that going to kill him because he is not fully concentrate on the work
+and involved in some stupid creation that are useless for them ! Shit !
+
+
