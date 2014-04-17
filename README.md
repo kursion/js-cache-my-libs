@@ -48,7 +48,7 @@ You can configure his nutriments by editing the configuration file *config.ini*
 
 #### SERVER section
 * port (default 8666): where to feed this animal
-* pid (defaut /var/run/cml/cml.pid): check if he is alive
+* pid (defaut /var/run/cml/cml.pid): check if he is alive (not implemented yet)
 
 #### CACHE section
 This section provides you some basic influence over the caching options.
