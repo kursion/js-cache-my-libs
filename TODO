@@ -1,2 +1,3 @@
 TODO LIST
-- adding PID
+- refactoring to have separate module between handler and cml
+- encapsulate function into cml class

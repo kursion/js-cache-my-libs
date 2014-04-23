@@ -2,15 +2,33 @@
 import os, http.server, socketserver, hashlib, urllib.request, \
     configparser, argparse
 
-parser = argparse.ArgumentParser(
-        description='CacheMyLibs - Yves Lange')
-parser.add_argument(
-        '--verbosity', action="store_true",
-        help='adding some verbosity')
-ARGS = parser.parse_args()
+# TODO: refactoring everything here !
+class Cml:
 
-# Settings
-cfg_file = "config.ini"
+    def __init__(s):
+        print("INIT CML")
+a = Cml()
+
+
+class Args:
+    """ Retrieve arguments from command line """
+    args = None
+
+    def __init__(s):
+        parser = argparse.ArgumentParser(
+                description='CacheMyLibs - Yves Lange')
+        parser.add_argument('-c',
+                '--config', default='config.ini',
+                help='specific configuration file')
+        parser.add_argument(
+                '--verbosity', action="store_true",
+                help='adding some verbosity')
+        s.args = parser.parse_args()
+
+    def get(s):
+        return s.args
+
+ARGS = Args().get()
 
 def initConfig(config_filename):
     """ Creating the default configuration file """
@@ -18,16 +36,16 @@ def initConfig(config_filename):
     config['DEFAULT'] = {}
     config['SERVER'] = {
             'port': 8666,
-            'pid': "/var/run/cml/cml.pid",
+            'pidfile': "cml.pid",
             }
     config['CACHE'] = {
-            'use-cache': "no",
+            'use-cache': "yes",
             'cache-dir': "cache/"
             }
-    CONFIG["CDN"] = {
+    config["CDN"] = {
             'cloudflare': "http://cdnjs.cloudflare.com/ajax/libs"
             }
-    CONFIG["LIBS"] = {
+    config["LIBS"] = {
             'jquery.min.js': "jquery/2.1.1-beta1/jquery.min.js",
             'react.js': "react/0.10.0/react.min.js"
             }
@@ -41,18 +59,25 @@ def readConfig(config_filename):
         for sec in config.sections():
             print("[", sec, "]")
             for el in config[sec]:
-                print(">", el, "\t:", config[sec][el])
+                print(">", el, ":", config[sec][el])
     return config
 
 # Configuration init
-if not os.path.isfile(cfg_file): initConfig(cfg_file)
-CONFIG = readConfig(cfg_file)
+if not os.path.isfile(ARGS.config):
+    if ARGS.verbosity:
+        print("Configuration file not found, creating", ARGS.config)
+    initConfig(ARGS.config)
+CONFIG = readConfig(ARGS.config)
 
+if not os.path.exists(CONFIG["CACHE"]["cache-dir"]):
+    if ARGS.verbosity:
+        print("Cache directory not found, creating",
+                CONFIG["CACHE"]["cache-dir"])
+    os.mkdir(CONFIG["CACHE"]["cache-dir"])
 
 # HTTP Get Handler
 Handler = http.server.SimpleHTTPRequestHandler
 class MyHandler (Handler):
-    cdnExts = ['js']
 
     def do_GET(self):
       """Serve a GET request."""
@@ -93,8 +118,7 @@ class MyHandler (Handler):
         ctype = self.guess_type(path)
         try:
             # Try to download from CDN and retry
-            if path.split(".")[-1] in self.cdnExts and \
-                    CONFIG["CACHE"].getboolean("use-cache"):
+            if CONFIG["CACHE"].getboolean("use-cache"):
                 f = self.attemptCDN(self.path)
             else: f = open(path, 'rb')
         except OSError:
@@ -169,15 +193,27 @@ class MyHandler (Handler):
         f = open(path, 'rb')
         return f
 
+# INIT
+def init(CONFIG):
+    pid = str(os.getpid())
+    if os.path.isfile(CONFIG["SERVER"]["pidfile"]):
+        print(CONFIG["SERVER"]["pidfile"],"already exists, exiting")
+        exit()
+    else: open(CONFIG["SERVER"]["pidfile"], 'w').write(pid)
 
 # MAIN
+init(CONFIG)
 PORT = int(CONFIG["SERVER"]["port"])
-httpd = socketserver.TCPServer(("", PORT), MyHandler)
+try:
+    httpd = socketserver.TCPServer(("", PORT), MyHandler)
+except OSError:
+    print("Error: ip already binded")
+    os.unlink(CONFIG["SERVER"]["pidfile"])
+    exit()
+
 if ARGS.verbosity: print("serving at port", PORT)
-httpd.serve_forever()
-
-
-
-
-
-
+try:
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    if ARGS.verbosity: print("exiting...")
+    os.unlink(CONFIG["SERVER"]["pidfile"])
