@@ -1,79 +1,18 @@
 #!/bin/python3
-import os, http.server, socketserver, hashlib, urllib.request, \
-    configparser, argparse
+import os, http.server, socketserver, hashlib, urllib.request, config
+import utils
 
 # TODO: refactoring everything here !
 class Cml:
-
+    ARGS = config.Main().getArgs()
     def __init__(s):
         print("INIT CML")
+        if not os.path.exists(CONFIG["CACHE"]["cache-dir"]):
+            u.print("Cache directory not found, creating",
+                        CONFIG["CACHE"]["cache-dir"])
+            os.mkdir(CONFIG["CACHE"]["cache-dir"])
 a = Cml()
 
-
-class Args:
-    """ Retrieve arguments from command line """
-    args = None
-
-    def __init__(s):
-        parser = argparse.ArgumentParser(
-                description='CacheMyLibs - Yves Lange')
-        parser.add_argument('-c',
-                '--config', default='config.ini',
-                help='specific configuration file')
-        parser.add_argument(
-                '--verbosity', action="store_true",
-                help='adding some verbosity')
-        s.args = parser.parse_args()
-
-    def get(s):
-        return s.args
-
-ARGS = Args().get()
-
-def initConfig(config_filename):
-    """ Creating the default configuration file """
-    config = configparser.ConfigParser()
-    config['DEFAULT'] = {}
-    config['SERVER'] = {
-            'port': 8666,
-            'pidfile': "cml.pid",
-            }
-    config['CACHE'] = {
-            'use-cache': "yes",
-            'cache-dir': "cache/"
-            }
-    config["CDN"] = {
-            'cloudflare': "http://cdnjs.cloudflare.com/ajax/libs"
-            }
-    config["LIBS"] = {
-            'jquery.min.js': "jquery/2.1.1-beta1/jquery.min.js",
-            'react.js': "react/0.10.0/react.min.js"
-            }
-    with open(config_filename, 'w') as cfg: config.write(cfg)
-
-def readConfig(config_filename):
-    """ Reading the configuration file """
-    config = configparser.ConfigParser()
-    config.read(config_filename)
-    if ARGS.verbosity:
-        for sec in config.sections():
-            print("[", sec, "]")
-            for el in config[sec]:
-                print(">", el, ":", config[sec][el])
-    return config
-
-# Configuration init
-if not os.path.isfile(ARGS.config):
-    if ARGS.verbosity:
-        print("Configuration file not found, creating", ARGS.config)
-    initConfig(ARGS.config)
-CONFIG = readConfig(ARGS.config)
-
-if not os.path.exists(CONFIG["CACHE"]["cache-dir"]):
-    if ARGS.verbosity:
-        print("Cache directory not found, creating",
-                CONFIG["CACHE"]["cache-dir"])
-    os.mkdir(CONFIG["CACHE"]["cache-dir"])
 
 # HTTP Get Handler
 Handler = http.server.SimpleHTTPRequestHandler
