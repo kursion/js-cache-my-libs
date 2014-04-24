@@ -1,7 +1,11 @@
-import http.server, os
+import http.server, os, hashlib, urllib.request
+import utils, config
 
 # HTTP Get Handler
 class MyHandler (http.server.SimpleHTTPRequestHandler):
+    conf = config.Main()
+    ARGS    = conf.getArgs()
+    CONFIG  = conf.getConfig()
 
     def do_GET(self):
       """Serve a GET request."""
@@ -42,7 +46,7 @@ class MyHandler (http.server.SimpleHTTPRequestHandler):
         ctype = self.guess_type(path)
         try:
             # Try to download from CDN and retry
-            if CONFIG["CACHE"].getboolean("use-cache"):
+            if self.CONFIG["CACHE"].getboolean("use-cache"):
                 f = self.attemptCDN(self.path)
             else: f = open(path, 'rb')
         except OSError:
@@ -65,32 +69,38 @@ class MyHandler (http.server.SimpleHTTPRequestHandler):
             f.close()
             raise
 
-    def attemptCDN(self, path):
+    def attemptCDN(s, path):
         """ Tries to get the CDN from localhost or download it
         from the CDN (cloudflare.com) """
-        if path[1:] in CONFIG["LIBS"]: path = "/"+CONFIG["LIBS"][path[1:]]
 
-        for cdnPrefix in CONFIG["CDN"]:
-            cdnPath = CONFIG["CDN"][cdnPrefix]+path
-            filename = CONFIG["CACHE"]["cache-dir"]+hashlib.md5(cdnPath.encode()).hexdigest()
-            if ARGS.verbosity: print("Checking cache: ", cdnPath, "as", filename)
-            f = self.getFile(filename)
+        u = utils.Main(s.ARGS.verbosity)
+
+        if path[1:] in s.CONFIG["LIBS"]:
+            path = "/"+s.CONFIG["LIBS"][path[1:]]
+
+        for cdnPrefix in s.CONFIG["CDN"]:
+            cdnPath = s.CONFIG["CDN"][cdnPrefix]+path
+            filename = s.CONFIG["CACHE"]["cache-dir"]+\
+                    hashlib.md5(cdnPath.encode()).hexdigest()
+            u.print("Checking cache: ", cdnPath, "as", filename)
+            f = s.getFile(filename)
             if f != None:
-                print("Found in cache at", filename)
+                u.print("Found in cache at", filename)
                 return f
 
         # Was not in cache, get it from CDN
-        for cdnPrefix in CONFIG["CDN"]:
-            cdnPath = CONFIG["CDN"][cdnPrefix]+path
-            filename = CONFIG["CACHE"]["cache-dir"]+hashlib.md5(cdnPath.encode()).hexdigest()
-            if ARGS.verbosity:
-                print("Get from", cdnPrefix, cdnPath)
+        for cdnPrefix in s.CONFIG["CDN"]:
+            cdnPath = s.CONFIG["CDN"][cdnPrefix]+path
+            filename = s.CONFIG["CACHE"]["cache-dir"]+\
+                    hashlib.md5(cdnPath.encode()).hexdigest()
+            u.print("Get from", cdnPrefix, cdnPath)
             f = self.getPage(cdnPath, filename)
             if f != None:
-                if ARGS.verbosity: print("Found", cdnPath, "from CDN and store in ", filename)
+                u.print("Found", cdnPath, "from CDN and store in ",
+                        filename)
                 break
             else:
-                if ARGS.verbosity: print("Not found from", cdnPath)
+                u.print("Not found from", cdnPath)
 
         return f
 

@@ -29,6 +29,12 @@ class Main:
         parser.add_argument('-c',
                 '--config', default='config.ini',
                 help='specific configuration file')
+        parser.add_argument('-p',
+                '--port',
+                help='server port (overwrite config file)')
+        parser.add_argument(
+                '--no-pid', action="store_true",
+                help='ignore pid file')
         parser.add_argument('-v',
                 '--verbosity', action="store_true",
                 help='adding some verbosity')
