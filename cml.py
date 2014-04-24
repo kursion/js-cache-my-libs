@@ -6,11 +6,11 @@ import handler
 
 # TODO: refactoring everything here !
 class Cml:
-    conf = config.Main()
+    conf    = config.Main()
     ARGS    = conf.getArgs()
     CONFIG  = conf.getConfig()
     def __init__(s):
-        u = utils.Main(s.ARGS.verbosity)
+        u = utils.Main(verbosity=s.ARGS.verbosity)
 
         # Pid check
         if not s.ARGS.no_pid:
@@ -27,10 +27,11 @@ class Cml:
                         s.CONFIG["CACHE"]["cache-dir"])
             os.mkdir(s.CONFIG["CACHE"]["cache-dir"])
 
-        # MAIN
+        # Server port configuration
         if s.ARGS.port: PORT = int(s.ARGS.port)
         else: PORT = int(s.CONFIG["SERVER"]["port"])
 
+        # Init TCPServer
         try:
             httpd = socketserver.TCPServer(("", PORT), handler.MyHandler)
         except OSError:
@@ -40,12 +41,16 @@ class Cml:
             exit()
 
         u.print("serving at port", PORT)
+
+        # Launching the server
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:
             u.print("exiting...")
             if not s.ARGS.no_pid:
                 os.unlink(s.CONFIG["SERVER"]["pidfile"])
+
+# Python might start eating from this point
 cml = Cml()
 
 

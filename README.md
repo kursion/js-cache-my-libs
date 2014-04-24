@@ -80,8 +80,10 @@ react.js = react/0.10.0/react.min.js
 
 Arguments options
 -----------------
-* --verbosity (default: no): do you want to speak with the python ?
-
+* --verbosity (default: False): do you want to speak with the python ?
+* --config (default: config.ini): let you use a specific config file
+* --port (default: None): let you specify a port value to overwrite configuration file
+* --no-pid (default: False): don't check and don't use pid file
 
 What about the author ?
 =======================

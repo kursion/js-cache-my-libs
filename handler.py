@@ -1,11 +1,13 @@
-import http.server, os, hashlib, urllib.request
+import http.server, os, hashlib, urllib.request, time
 import utils, config
 
 # HTTP Get Handler
 class MyHandler (http.server.SimpleHTTPRequestHandler):
+    # TODO: find another way to pass those things from cml.py
     conf = config.Main()
     ARGS    = conf.getArgs()
     CONFIG  = conf.getConfig()
+    u = utils.Main(ARGS.verbosity)
 
     def do_GET(self):
       """Serve a GET request."""
@@ -46,9 +48,12 @@ class MyHandler (http.server.SimpleHTTPRequestHandler):
         ctype = self.guess_type(path)
         try:
             # Try to download from CDN and retry
+            tS = time.time()*1000
             if self.CONFIG["CACHE"].getboolean("use-cache"):
                 f = self.attemptCDN(self.path)
             else: f = open(path, 'rb')
+            tE = time.time()*1000
+            self.u.print("# Job done in:", tE-tS, "ms")
         except OSError:
             self.send_error(404, "File not found")
             return None
@@ -72,8 +77,7 @@ class MyHandler (http.server.SimpleHTTPRequestHandler):
     def attemptCDN(s, path):
         """ Tries to get the CDN from localhost or download it
         from the CDN (cloudflare.com) """
-
-        u = utils.Main(s.ARGS.verbosity)
+        u = s.u
 
         if path[1:] in s.CONFIG["LIBS"]:
             path = "/"+s.CONFIG["LIBS"][path[1:]]
@@ -94,14 +98,13 @@ class MyHandler (http.server.SimpleHTTPRequestHandler):
             filename = s.CONFIG["CACHE"]["cache-dir"]+\
                     hashlib.md5(cdnPath.encode()).hexdigest()
             u.print("Get from", cdnPrefix, cdnPath)
-            f = self.getPage(cdnPath, filename)
+            f = s.getPage(cdnPath, filename)
             if f != None:
                 u.print("Found", cdnPath, "from CDN and store in ",
                         filename)
                 break
             else:
                 u.print("Not found from", cdnPath)
-
         return f
 
     def getFile(self, filename):

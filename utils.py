@@ -1,7 +1,7 @@
 class Main:
     verbosity = False
 
-    def __init__(s, verbosity):
+    def __init__(s, verbosity=False):
         s.verbosity = verbosity
 
     def print(s, *txt):
