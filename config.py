@@ -9,21 +9,21 @@ class Main:
 
     def __init__(s):
         # Arguments init
-        s.initArgs()
+        s.__initArgs()
         u = utils.Main(s.args.verbosity)
 
         # Configuration init
         if not os.path.isfile(s.args.config):
             u.print("Configuration file not found, creating",
                     s.args.config)
-            s.initConfig(s.args.config)
-        s.readConfig(s.args.config)
+            s.__initConfig(s.args.config)
+        s.__readConfig(s.args.config)
         for sec in s.config.sections():
             u.print("[", sec, "]")
             for el in s.config[sec]:
                 u.print(">", el, ":", s.config[sec][el])
 
-    def initArgs(s):
+    def __initArgs(s):
         parser = argparse.ArgumentParser(
                 description='CacheMyLibs - Yves Lange')
         parser.add_argument('-c',
@@ -38,7 +38,7 @@ class Main:
         """ Get the arguments parser """
         return s.args
 
-    def initConfig(s, config_filename):
+    def __initConfig(s, config_filename):
         """ Creating the default configuration file """
         config = configparser.ConfigParser()
         config['DEFAULT'] = {}
@@ -59,7 +59,7 @@ class Main:
                 }
         with open(config_filename, 'w') as cfg: config.write(cfg)
 
-    def readConfig(s, config_filename):
+    def __readConfig(s, config_filename):
         """ Reading the configuration file """
         s.config = configparser.ConfigParser()
         s.config.read(config_filename)

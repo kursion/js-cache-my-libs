@@ -7,5 +7,8 @@ class Main:
     def print(s, *txt):
         """ Verbosity print
         should receive the args.parser with verbosity set """
-        if s.verbosity: print(' '.join(txt))
+        if s.verbosity:
+            r = ""
+            for e in txt: r += ' '+str(e)
+            print(r)
 
