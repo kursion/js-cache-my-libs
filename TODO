@@ -1,3 +1,7 @@
-TODO LIST
-- refactoring to have separate module between handler and cml
-- encapsulate function into cml class
+TODO
++ Make use of __init__.py files and libs/ directory
+* Config file: LIBS should become ALIAS
+* Add more alias
+* Create cloudflare parser to get latest lib automatically.
+* Add options to config file to parse/check latest version
+

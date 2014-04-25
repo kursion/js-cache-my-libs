@@ -13,8 +13,8 @@ History
 -------
 Hugo (a little Tauren from the Orgrimmar city) mentionned the idea to create
 a little proxy server that will directly download libs. I found that this idea
-was cool and easily realizable. While he was spending his time killing some Murlocs
-near Lordaeron, I took my courage to levelup my python skills.
+was cool and easily realizable. Instead of killing Murlocs,
+I took my courage to levelup my python skills.
 
 
 Why Python ?
@@ -85,11 +85,8 @@ Arguments options
 * --port (default: None): let you specify a port value to overwrite configuration file
 * --no-pid (default: False): don't check and don't use pid file
 
-What about the author ?
+Author and contributions
 =======================
-He stopped playing World of Warcraft to create small tools for the community. It might not be very usefull for most of
-you but he enjoys a lot typing text and eating Marshmallows in front of his screen... no matter what ! Actually he works
-at AgFlow with a very great team that going to kill him because he is not fully concentrate on the work
-and involved in some stupid creation that are useless for them ! Shit !
+Yves Lange (author)
 
 
