@@ -1,4 +1,7 @@
 TODO
+****** !!! vendor.js should combine file according to domain name or a tag name
+for example: $cml should combine jquery, reactjs, ...
+=> advantage, one single template, one single file !
 + Make use of __init__.py files and libs/ directory
 * Config file: LIBS should become ALIAS
 * Add more alias

@@ -8,6 +8,14 @@ This tools was made for lazy developpers like me. Everytime I started a project
 that needs some JavaScript librairies I needed to download them or install some
 other big tools to do it for me.
 
+CacheMyLibs will simply do it for you.
+
+Other advantages:
+- Simple to use.
+- Let you work offline.
+- Multiple projects will make use of a single file.
+- Clear your architecture by not putting the dependencies in your project.
+
 
 History
 -------

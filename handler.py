@@ -4,10 +4,10 @@ import utils, config
 # HTTP Get Handler
 class MyHandler (http.server.SimpleHTTPRequestHandler):
     # TODO: find another way to pass those things from cml.py
-    conf = config.Main()
-    ARGS    = conf.getArgs()
-    CONFIG  = conf.getConfig()
-    u = utils.Main(ARGS.verbosity)
+    conf   = config.Main()
+    ARGS   = conf.getArgs()
+    CONFIG = conf.getConfig()
+    u      = utils.Main(ARGS.verbosity)
 
     def do_GET(self):
       """Serve a GET request."""
