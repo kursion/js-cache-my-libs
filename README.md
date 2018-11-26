@@ -16,15 +16,6 @@ Other advantages:
 - Multiple projects will make use of a single file.
 - Clear your architecture by not putting the dependencies in your project.
 
-
-History
--------
-Hugo (a little Tauren from the Orgrimmar city) mentionned the idea to create
-a little proxy server that will directly download libs. I found that this idea
-was cool and easily realizable. Instead of killing Murlocs,
-I took my courage to levelup my python skills.
-
-
 Why Python ?
 ------------
 Pythons are easy to cache and can be very and can be very fierce and unpredictable.
